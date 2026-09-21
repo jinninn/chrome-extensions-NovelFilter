@@ -3,6 +3,7 @@ $projectRoot = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..'))
 # Explicit allowlist: never recursively copy a developer's workspace.
 $releaseFiles = @(
     'manifest.json', 'popup.html', 'options.html', 'README.md', 'PRIVACY.md',
+    'icons/icon-16.png', 'icons/icon-32.png', 'icons/icon-48.png', 'icons/icon-128.png',
     'docs/specification.md', 'docs/publishing.md',
     'src/background.js', 'src/core.js', 'src/sites.js', 'src/content.js',
     'src/content.css', 'src/ui.js', 'src/ui.css', 'src/popup.js', 'src/options.js'

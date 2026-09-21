@@ -3,6 +3,7 @@ coverage/
 *.zip
 .test-artifacts/
 dist/
+NovelFilter/
 
 # Local credentials and editor/agent settings
 .env
