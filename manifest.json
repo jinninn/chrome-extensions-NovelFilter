@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Novel Filter - 小説既読フィルター",
   "version": "0.1.0",
-  "description": "カクヨム・小説家になろうの既読作品や非表示作品を一覧から除外。履歴は端末内に保存し、JSONで持ち運べます。",
+  "description": "カクヨム・小説家になろうの既読作品や非表示作品を一覧から除外。履歴は端末内に保存し、JSONでエクスポート可能です。",
   "minimum_chrome_version": "109",
   "permissions": ["storage"],
   "background": { "service_worker": "src/background.js", "type": "module" },
