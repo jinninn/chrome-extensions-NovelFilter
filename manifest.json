@@ -1,0 +1,17 @@
+{
+  "manifest_version": 3,
+  "name": "Novel Filter - 小説既読フィルター",
+  "version": "0.1.0",
+  "description": "カクヨム・小説家になろうの既読作品や非表示作品を一覧から除外。履歴は端末内に保存し、JSONで持ち運べます。",
+  "minimum_chrome_version": "109",
+  "permissions": ["storage"],
+  "background": { "service_worker": "src/background.js", "type": "module" },
+  "action": { "default_title": "Novel Filter", "default_popup": "popup.html" },
+  "options_page": "options.html",
+  "content_scripts": [{
+    "matches": ["https://kakuyomu.jp/*", "https://ncode.syosetu.com/*", "https://yomou.syosetu.com/*", "https://mypage.syosetu.com/*"],
+    "js": ["src/core.js", "src/sites.js", "src/content.js"],
+    "css": ["src/content.css"],
+    "run_at": "document_idle"
+  }]
+}

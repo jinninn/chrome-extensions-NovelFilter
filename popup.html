@@ -1,0 +1,15 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Novel Filter</title><link rel="stylesheet" href="src/ui.css"></head>
+<body class="popup"><main>
+  <header><div class="brand">NF</div><div><h1>Novel Filter</h1><p>次に読みたい作品を、見つけやすく。</p></div></header>
+  <div class="stats"><div><strong id="readCount">—</strong><span>既読</span></div><div><strong id="hiddenCount">—</strong><span>非表示</span></div></div>
+  <section><label class="toggle"><span>フィルターを有効にする</span><input id="enabled" type="checkbox"></label>
+    <label class="toggle"><span>既読作品を隠す</span><input id="hideRead" type="checkbox"></label>
+    <label class="toggle"><span>非表示に登録した作品を隠す</span><input id="hideHidden" type="checkbox"></label>
+    <label class="field">表示方法<select id="display"><option value="hide">完全に非表示</option><option value="dim">半透明</option><option value="placeholder">「既読・非表示の作品」と表示</option></select></label>
+    <label class="field">自動既読<select id="autoRead"><option value="episode">本文を開いたら登録</option><option value="work">作品ページを開いたら登録</option><option value="manual">手動のみ</option></select></label>
+  </section>
+  <button id="openOptions" class="primary wide">履歴・バックアップを管理</button>
+  <p class="note">カクヨム・小説家になろうに対応<br>履歴はこのブラウザ内に保存されます。</p>
+  <p id="message" role="status" aria-live="polite"></p>
+</main><script src="src/core.js"></script><script type="module" src="src/popup.js"></script></body></html>

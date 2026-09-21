@@ -1,0 +1,4 @@
+node_modules/
+coverage/
+*.zip
+.test-artifacts/

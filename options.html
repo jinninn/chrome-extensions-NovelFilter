@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>履歴と設定 · Novel Filter</title><link rel="stylesheet" href="src/ui.css"></head>
+<body><main class="dashboard">
+  <header><div class="brand">NF</div><div><h1>Novel Filter</h1><p>既読履歴と、これからの読書を整理。</p></div><span class="local-badge">端末内に保存</span></header>
+  <div class="stats"><div><strong id="readCount">—</strong><span>既読作品</span></div><div><strong id="hiddenCount">—</strong><span>非表示作品</span></div></div>
+  <p id="message" role="status" aria-live="polite"></p>
+  <div class="columns"><section><h2>表示と既読登録</h2>
+    <label class="toggle"><span>フィルターを有効にする</span><input id="enabled" type="checkbox"></label>
+    <label class="toggle"><span>既読作品を隠す</span><input id="hideRead" type="checkbox"></label>
+    <label class="toggle"><span>非表示に登録した作品を隠す</span><input id="hideHidden" type="checkbox"></label>
+    <label class="field">表示方法<select id="display"><option value="hide">完全に非表示</option><option value="dim">半透明</option><option value="placeholder">「既読・非表示の作品」と表示</option></select></label>
+    <label class="field">自動既読<select id="autoRead"><option value="episode">本文を開いたら登録</option><option value="work">作品ページを開いたら登録</option><option value="manual">手動のみ</option></select></label>
+    <p class="note">設定は保存後、開いている対象ページにも反映されます。自動既読は「非表示」の登録を上書きしません。</p>
+  </section><section><h2>バックアップ</h2><p>履歴をJSONファイルで持ち運べます。取り込み時は作品ごとに更新日時が新しい変更を採用します。</p>
+    <div class="actions"><button id="export" class="primary">JSONを書き出す</button><button id="chooseImport">JSONを取り込む</button></div>
+    <input id="importFile" type="file" accept=".json,application/json" hidden>
+    <div id="importPreview" hidden><p id="importSummary"></p><div class="actions"><button id="confirmImport" class="primary">この内容を取り込む</button><button id="cancelImport">キャンセル</button></div></div>
+    <p class="note">未読に戻した記録も含まれます。設定は書き出しません。自動同期はありません。拡張機能の削除前にバックアップしてください。</p>
+  </section></div>
+  <section><h2>作品を登録</h2><form id="addForm" class="actions"><label class="grow"><span class="sr-only">作品のURL</span><input id="workUrl" type="url" required placeholder="カクヨム・なろうの作品URL" aria-label="作品のURL"></label><select id="addStatus" aria-label="登録する状態"><option value="read">既読</option><option value="hidden">非表示</option></select><button class="primary" type="submit">登録</button></form></section>
+  <section><div class="section-title"><h2>作品の履歴</h2><span id="resultCount" class="note"></span></div>
+    <div class="actions filters"><input id="search" type="search" placeholder="タイトル・作者・作品IDで検索" aria-label="履歴を検索" class="grow"><select id="siteFilter" aria-label="サイト"><option value="all">すべてのサイト</option><option value="kakuyomu">カクヨム</option><option value="narou">小説家になろう</option></select><select id="statusFilter" aria-label="状態"><option value="active">既読・非表示</option><option value="read">既読</option><option value="hidden">非表示</option><option value="unread">未読に戻した作品</option><option value="all">すべての状態</option></select></div>
+    <div id="historyList"></div><div class="pagination"><button id="previous">前へ</button><span id="pageLabel"></span><button id="next">次へ</button></div>
+  </section>
+  <footer>Novel Filter 0.1.0 · サーバー・アカウント登録は不要です。</footer>
+</main><script src="src/core.js"></script><script type="module" src="src/options.js"></script></body></html>
