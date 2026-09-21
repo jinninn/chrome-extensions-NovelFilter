@@ -2,3 +2,30 @@ node_modules/
 coverage/
 *.zip
 .test-artifacts/
+dist/
+
+# Local credentials and editor/agent settings
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+.npmrc
+.vscode/
+.idea/
+.codex/
+.agents/
+*.log
+*.tmp
+Thumbs.db
+.DS_Store
+
+# Private history exports, captures, and browser profiles
+novel-filter-history*.json
+novel-read-history*.json
+backups/
+private/
+captures/
+browser-profile/

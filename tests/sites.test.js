@@ -21,11 +21,11 @@ test('Narou linked and unlinked pen names are captured without the author label'
   }
 });
 test('Kakuyomu reader takes the matching work heading, not the close icon or episode title', () => {
-  const document = doc(`<a href="/works/2912051606524995492"><svg><title>閉じる</title></svg></a>
+  const document = doc(`<a href="/works/123"><svg><title>閉じる</title></svg></a>
     <h1><a href="/works/999" title="別の作品">別の作品</a></h1>
-    <h1 class="js-vertical-composition-item"><a href="/works/2912051606524995492" title="作品の正式タイトル" itemprop="item"><span itemprop="name">作品の正式タイトル</span></a></h1>
+    <h1 class="js-vertical-composition-item"><a href="/works/123" title="作品の正式タイトル" itemprop="item"><span itemprop="name">作品の正式タイトル</span></a></h1>
     <h2 title="第1話"><span itemprop="name">第1話</span></h2>`);
-  assert.equal(sites.currentWork(document, 'https://kakuyomu.jp/works/2912051606524995492/episodes/123').title, '作品の正式タイトル');
+  assert.equal(sites.currentWork(document, 'https://kakuyomu.jp/works/123/episodes/456').title, '作品の正式タイトル');
 });
 test('title fallback ignores an unlabelled close link when the heading is missing', () => {
   const document = doc('<meta property="og:title" content="作品のメタタイトル"><a href="/works/123"><svg><title>閉じる</title></svg></a>');
