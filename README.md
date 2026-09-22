@@ -1,4 +1,4 @@
-# Novel Filter
+# Novel Filter (AI作)
 
 カクヨム・小説家になろうの既読作品や非表示作品を一覧から除外するChrome拡張機能です。Manifest V3、ビルド不要、サーバー不要です。
 
