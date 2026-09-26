@@ -8,12 +8,12 @@ const flush = () => new Promise(resolve => setImmediate(resolve));
 async function setup(html, history, settings = {}, url = 'https://kakuyomu.jp/rankings/all/weekly') {
   const { document, window } = parseHTML(`<html><body>${html}</body></html>`);
   Object.defineProperty(document, 'visibilityState', { value: 'visible', writable: true });
-  let change, mutation, state = { history: history || { formatVersion: 1, works: {} }, settings }, timers = new Map(), nextTimer = 0;
+  let change, mutation, pageMessage, state = { history: history || { formatVersion: 1, works: {} }, settings }, timers = new Map(), nextTimer = 0;
   const messages = [];
   const context = vm.createContext({ document, window, location: { href: url }, URL, console,
     setTimeout(fn) { const id = ++nextTimer; timers.set(id, fn); return id; }, clearTimeout(id) { timers.delete(id); }, setInterval() { return 1; }, clearInterval() {},
     MutationObserver: class { constructor(fn) { mutation = fn; } disconnect() {} observe() {} },
-    chrome: { storage: { onChanged: { addListener(fn) { change = fn; } } }, runtime: { async sendMessage(message) {
+    chrome: { storage: { onChanged: { addListener(fn) { change = fn; } } }, runtime: { id: 'test-extension', onMessage: { addListener(fn) { pageMessage = fn; } }, async sendMessage(message) {
       messages.push(message);
       if (message.type === 'status') state.history = context.NovelFilter.setStatus(state.history, message.work, message.status, 200, message.automatic);
       return { ok: true, ...state, settings: context.NovelFilter.settings(state.settings) };
@@ -21,7 +21,8 @@ async function setup(html, history, settings = {}, url = 'https://kakuyomu.jp/ra
   });
   scripts.forEach(source => vm.runInContext(source, context)); await flush();
   async function tick() { const pending = [...timers.values()]; timers.clear(); for (const fn of pending) fn(); await flush(); }
-  return { document, window, messages, tick, mutation: () => mutation([]), async settings(next) { change({ settings: { newValue: next } }, 'local'); await tick(); }, async history(next) { state.history = next; change({ history: { newValue: next } }, 'local'); await tick(); } };
+  function sendPage(type) { let response; pageMessage({ channel: 'novel-filter-page', type }, { id: 'test-extension' }, value => { response = value; }); return response; }
+  return { document, window, messages, tick, sendPage, mutation: () => mutation([]), async settings(next) { state.settings = next; change({ settings: { newValue: next } }, 'local'); await tick(); }, async history(next) { state.history = next; change({ history: { newValue: next } }, 'local'); await tick(); } };
 }
 const history = { formatVersion: 1, works: { 'kakuyomu:123': { site: 'kakuyomu', workId: '123', status: 'read', updatedAt: 100 } } };
 const card = '<li class="Rankings_item__abc"><h3><a href="/works/123">作品A</a></h3><p>あらすじ</p></li>';
@@ -29,6 +30,12 @@ test('content filters and restores cards, tracks dynamic additions and avoids du
   const app = await setup(`<ol>${card}</ol>`, history);
   assert.equal(app.document.querySelector('li').dataset.nfFilter, 'hide');
   assert.equal(app.document.querySelectorAll('.nf-controls').length, 1);
+  assert.equal(app.document.querySelector('.nf-toolbar'), null);
+  assert.equal(app.sendPage('getPageState').filteredCount, 1);
+  assert.equal(app.sendPage('toggleTemporaryShow').temporaryShow, true);
+  assert.equal(app.document.querySelector('li').hasAttribute('data-nf-filter'), false);
+  assert.equal(app.sendPage('toggleTemporaryShow').temporaryShow, false);
+  assert.equal(app.document.querySelector('li').dataset.nfFilter, 'hide');
   await app.settings({ enabled: false });
   assert.equal(app.document.querySelector('li').hasAttribute('data-nf-filter'), false);
   assert.equal(app.document.querySelectorAll('.nf-controls').length, 0);

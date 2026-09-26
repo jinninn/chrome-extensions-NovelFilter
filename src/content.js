@@ -3,21 +3,14 @@
   const core = globalThis.NovelFilter, sites = globalThis.NovelFilterSites;
   let history = core.empty(), prefs = core.settings(), temporaryShow = false;
   let lastUrl = location.href, autoDone = false, timer, stopped = false;
+  let currentWork = null, filteredCount = 0, lastError = '';
   const cards = new Map();
   const revealed = new Set();
-  const toolbar = document.createElement('details');
-  toolbar.className = 'nf-toolbar'; toolbar.dataset.nfUi = 'toolbar';
-  const summary = document.createElement('summary'); summary.textContent = 'Novel Filter';
-  const title = document.createElement('p'); title.className = 'nf-title';
-  const currentControls = document.createElement('div');
-  const showButton = button('このページだけ再表示', () => { temporaryShow = !temporaryShow; scan(); });
-  const info = document.createElement('p'); info.setAttribute('role', 'status');
-  toolbar.append(summary, title, currentControls, showButton, info);
   function button(label, action) {
     const el = document.createElement('button'); el.type = 'button'; el.textContent = label;
     el.addEventListener('click', async event => {
       event.preventDefault(); event.stopPropagation(); el.disabled = true;
-      try { await action(); } catch (error) { info.textContent = `保存できませんでした: ${error.message}`; info.className = 'nf-error'; }
+      try { await action(); } catch (error) { lastError = `保存できませんでした: ${error.message}`; console.error('[Novel Filter]', error); }
       finally { el.disabled = false; }
     });
     return el;
@@ -56,10 +49,7 @@
       if (lastUrl !== location.href) { lastUrl = location.href; autoDone = false; temporaryShow = false; revealed.clear(); }
       for (const [element, record] of cards) restore(element, record);
       cards.clear();
-      if (!toolbar.isConnected) document.body.append(toolbar);
-      const current = sites.currentWork(document, location.href);
-      title.textContent = current ? current.title : '一覧の作品を既読・非表示に登録できます';
-      currentControls.replaceChildren(...(current && prefs.enabled ? [controls(current)] : []));
+      currentWork = sites.currentWork(document, location.href);
       let hiddenCount = 0;
       if (prefs.enabled) for (const { element, work } of sites.findCards(document, location.href)) {
         const row = controls(work); element.append(row);
@@ -79,11 +69,10 @@
         }
         cards.set(element, record);
       }
-      summary.textContent = `Novel Filter · ${prefs.enabled ? `${hiddenCount}件をフィルター` : '停止中'}`;
-      showButton.textContent = temporaryShow ? 'フィルターを戻す' : 'このページだけ再表示';
-      showButton.hidden = !prefs.enabled || hiddenCount === 0;
-      maybeAutoRead(current);
-    } catch (error) { info.textContent = `ページの処理に失敗しました: ${error.message}`; }
+      filteredCount = hiddenCount;
+      lastError = '';
+      maybeAutoRead(currentWork);
+    } catch (error) { lastError = `ページの処理に失敗しました: ${error.message}`; console.error('[Novel Filter]', error); }
     finally { observer.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['href'] }); }
   }
   async function maybeAutoRead(work) {
@@ -93,8 +82,29 @@
     try {
       const result = await send({ type: 'status', work, status: 'read', automatic: true });
       history = result.history; schedule();
-    } catch (error) { info.className = 'nf-error'; info.textContent = `自動既読の保存に失敗しました: ${error.message}`; }
+    } catch (error) { lastError = `自動既読の保存に失敗しました: ${error.message}`; console.error('[Novel Filter]', error); }
   }
+  function pageState() {
+    return {
+      enabled: prefs.enabled,
+      filteredCount,
+      temporaryShow,
+      work: currentWork,
+      status: currentWork ? (history.works[core.keyOf(currentWork)]?.status || 'unread') : null,
+      error: lastError
+    };
+  }
+  chrome.runtime.onMessage.addListener((message, sender, respond) => {
+    if (sender.id !== chrome.runtime.id || message?.channel !== 'novel-filter-page') return false;
+    if (message.type === 'getPageState') { respond({ ok: true, ...pageState() }); return false; }
+    if (message.type === 'toggleTemporaryShow') {
+      temporaryShow = !temporaryShow;
+      scan();
+      respond({ ok: true, ...pageState() });
+      return false;
+    }
+    return false;
+  });
   chrome.storage.onChanged.addListener((changes, area) => {
     if (area !== 'local') return;
     if (changes.history) history = changes.history.newValue || core.empty();
@@ -106,7 +116,8 @@
   // Isolated worlds cannot reliably intercept a site's history.pushState.
   const navigationTimer = setInterval(() => { if (lastUrl !== location.href) schedule(); }, 1000);
   send({ type: 'get' }).then(result => { history = result.history; prefs = result.settings; scan(); }).catch(error => {
-    stopped = true; clearInterval(navigationTimer); toolbar.open = true;
-    info.textContent = `初期化できませんでした: ${error.message}`; document.body.append(toolbar);
+    stopped = true; clearInterval(navigationTimer);
+    lastError = `初期化できませんでした: ${error.message}`;
+    console.error('[Novel Filter]', error);
   });
 })();
